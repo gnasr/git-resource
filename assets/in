@@ -49,6 +49,7 @@ gpg_keyserver=$(jq -r '.source.gpg_keyserver // "hkp://ipv4.pool.sks-keyservers.
 disable_git_lfs=$(jq -r '(.params.disable_git_lfs // false)' < $payload)
 clean_tags=$(jq -r '(.params.clean_tags // false)' < $payload)
 short_ref_format=$(jq -r '(.params.short_ref_format // "%s")' < $payload)
+single_branch=$(jq -r '(.params.single_branch)' < $payload)
 
 configure_git_global "${git_config_payload}"
 
@@ -78,7 +79,11 @@ if [ "$disable_git_lfs" == "true" ]; then
   export GIT_LFS_SKIP_SMUDGE=1
 fi
 
-git clone --single-branch $depthflag $uri $branchflag $destination $tagflag
+if [ "$single_branch" == "false" ]; then
+  git clone $depthflag $uri $destination $tagflag
+else
+  git clone --single-branch $depthflag $uri $branchflag $destination $tagflag
+fi
 
 cd $destination
 
